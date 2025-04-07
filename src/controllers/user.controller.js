@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.util.js";
 import { ApiResponse } from "../utils/apiResponse.util.js";
 import { ApiError } from "../utils/apiError.util.js";
 import { User } from "../models/user.model.js";
-
+import { uploadOnCloudinary } from "../utils/cloudinary.util.js";
 const generateTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -136,4 +136,28 @@ const logOutUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "User logged Out."));
 });
 
-export { registerUser, loginUser, logOutUser };
+const updateAvatar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    return new ApiError(400, "Avatar file is missing.");
+  }
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (!avatar.url) {
+    return new ApiResponse(400, "Error while uploading on Avatar.");
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: { avatar: avatar.url },
+    },
+    { new: true } //  «Boolean» if true, return the modified document rather than the original
+  ).select("-password");
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "User cover Image updated successfully."));
+});
+
+export { registerUser, loginUser, logOutUser, updateAvatar };
