@@ -157,7 +157,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user, "User cover Image updated successfully."));
+    .json(new ApiResponse(200, user, "User Avatar updated successfully."));
 });
 
 export { registerUser, loginUser, logOutUser, updateAvatar };
