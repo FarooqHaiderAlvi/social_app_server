@@ -9,8 +9,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
       req.cookies?.access_token ||
       req.header("Authorization")?.replace("Bearer ", "");
     req.header("Control-Allow-Private-Network", "true");
-    console.log(token, "iam token");
-    // console.log(req, "iam req");
     if (!token) {
       throw new ApiError(401, "Unauthorized User");
     }
