@@ -44,9 +44,7 @@ const getPostComments = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong");
   }
   console.log(comments);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, comments, "comments fetched successfully!"));
+  return res.status(200).json(new ApiResponse(200, comments, "comments fetched successfully!"));
 });
 
 const createComment = asyncHandler(async (req, res) => {
@@ -72,9 +70,7 @@ const createComment = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong");
   }
   // console.log("inside addComment", comment);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, comment, "comment added successfully!"));
+  return res.status(200).json(new ApiResponse(200, comment, "comment added successfully!"));
 });
 
 const updateComment = asyncHandler(async (req, res) => {
@@ -101,9 +97,7 @@ const updateComment = asyncHandler(async (req, res) => {
   }
   return res
     .status(200)
-    .json(
-      new ApiResponse(200, updatedComment, "comment updated successfully!")
-    );
+    .json(new ApiResponse(200, updatedComment, "comment updated successfully!"));
 });
 
 const deleteComment = asyncHandler(async (req, res) => {
@@ -122,9 +116,7 @@ const deleteComment = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Something went wrong");
   }
   console.log(deletedComment);
-  return res
-    .status(200)
-    .json(new ApiResponse(200, {}, "comment deleted successfully!"));
+  return res.status(200).json(new ApiResponse(200, {}, "comment deleted successfully!"));
 });
 
 export { getPostComments, createComment, updateComment, deleteComment };

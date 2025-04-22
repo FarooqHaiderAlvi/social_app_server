@@ -37,9 +37,7 @@ const addFollower = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Failed to create follow relationship");
   }
 
-  return res
-    .status(201)
-    .json(new ApiResponse(201, newFollower, "Followed successfully"));
+  return res.status(201).json(new ApiResponse(201, newFollower, "Followed successfully"));
 });
 
 const removeFollower = asyncHandler(async (req, res) => {
@@ -61,9 +59,7 @@ const removeFollower = asyncHandler(async (req, res) => {
     throw new ApiError(400, "You are not following this user");
   }
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, null, "Unfollowed successfully"));
+  return res.status(200).json(new ApiResponse(200, null, "Unfollowed successfully"));
 });
 
 const getFollowStats = asyncHandler(async (req, res) => {
@@ -124,13 +120,7 @@ const getFollowers = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { userFollowers: followers },
-        "Followers fetched successfully"
-      )
-    );
+    .json(new ApiResponse(200, { userFollowers: followers }, "Followers fetched successfully"));
 });
 
 const getFollowings = asyncHandler(async (req, res) => {
@@ -168,19 +158,7 @@ const getFollowings = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { userFollowings: followings },
-        "Followers fetched successfully"
-      )
-    );
+    .json(new ApiResponse(200, { userFollowings: followings }, "Followers fetched successfully"));
 });
 
-export {
-  addFollower,
-  removeFollower,
-  getFollowStats,
-  getFollowers,
-  getFollowings,
-};
+export { addFollower, removeFollower, getFollowStats, getFollowers, getFollowings };

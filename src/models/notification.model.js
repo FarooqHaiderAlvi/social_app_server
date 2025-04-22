@@ -2,12 +2,12 @@ import mongoose, { Schema } from "mongoose";
 
 const notificationSchema = new Schema(
   {
-    notifyBy: {
+    sender: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    notifyTo: {
+    receiver: {
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -22,6 +22,7 @@ const notificationSchema = new Schema(
       enum: ["like", "comment", "follow"],
       required: true,
     },
+    isRead: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

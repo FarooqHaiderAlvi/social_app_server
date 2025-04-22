@@ -20,11 +20,7 @@ const generateTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
   const { email, fullName, password, username } = req.body;
   console.log("isnide registerUser");
-  if (
-    [email, fullName, password, username].some(
-      (field) => !field || field.trim() === ""
-    )
-  ) {
+  if ([email, fullName, password, username].some((field) => !field || field.trim() === "")) {
     throw new ApiError(400, "All fields are required");
   }
 
@@ -66,13 +62,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { tokens, id: user._id },
-        "User created Successfully."
-      )
-    );
+    .json(new ApiResponse(200, { tokens, id: user._id }, "User created Successfully."));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -161,9 +151,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     { new: true } //  «Boolean» if true, return the modified document rather than the original
   ).select("-password");
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, user, "User Avatar updated successfully."));
+  return res.status(200).json(new ApiResponse(200, user, "User Avatar updated successfully."));
 });
 
 export { registerUser, loginUser, logOutUser, updateAvatar };

@@ -12,8 +12,6 @@ const router = Router();
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
 router.route("/logout").post(verifyJWT, logOutUser);
-router
-  .route("/updateAvatar")
-  .patch(verifyJWT, upload.single("avatar"), updateAvatar);
+router.route("/updateAvatar").patch(verifyJWT, upload.single("avatar"), updateAvatar);
 
 export default router;

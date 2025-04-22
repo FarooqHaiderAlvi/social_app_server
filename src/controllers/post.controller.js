@@ -2,10 +2,7 @@ import { asyncHandler } from "../utils/asyncHandler.util.js";
 import { Post } from "../models/post.model.js";
 import { ApiError } from "../utils/apiError.util.js";
 import { ApiResponse } from "../utils/apiResponse.util.js";
-import {
-  deleteFromCloudinary,
-  uploadOnCloudinary,
-} from "../utils/cloudinary.util.js";
+import { deleteFromCloudinary, uploadOnCloudinary } from "../utils/cloudinary.util.js";
 
 const createPost = asyncHandler(async (req, res) => {
   const { description } = req.body;
@@ -32,9 +29,7 @@ const createPost = asyncHandler(async (req, res) => {
   if (!post) {
     throw new ApiError(500, "Unable to create post.");
   }
-  return res
-    .status(201)
-    .json(new ApiResponse(201, post, "Post created successfully."));
+  return res.status(201).json(new ApiResponse(201, post, "Post created successfully."));
 });
 
 const getUserPosts = asyncHandler(async (req, res) => {
@@ -93,9 +88,7 @@ const updatePost = asyncHandler(async (req, res) => {
     .save()
     .then((post) => {
       console.log(post, "post");
-      return res
-        .status(200)
-        .json(new ApiResponse(200, { post }, "Post updated."));
+      return res.status(200).json(new ApiResponse(200, { post }, "Post updated."));
     })
     .catch((e) => {
       throw new ApiError(500, "Unable to update post.");
@@ -122,9 +115,7 @@ const deletePost = asyncHandler(async (req, res) => {
   }
   await deleteFromCloudinary(postUrl);
 
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { deleteResult }, "Post deleted."));
+  return res.status(200).json(new ApiResponse(200, { deleteResult }, "Post deleted."));
 });
 
 export { createPost, getUserPosts, getPostById, updatePost, deletePost };
