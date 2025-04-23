@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
-
-const FollowerSchema = new Schema(
+import { Notification } from "./notification.model.js";
+const followerSchema = new Schema(
   {
     followerId: {
       type: Schema.Types.ObjectId,
@@ -14,4 +14,31 @@ const FollowerSchema = new Schema(
   { timestamps: true }
 );
 
-export const Follower = mongoose.model("Follower", FollowerSchema);
+followerSchema.post("save", async function (doc, next) {
+  try {
+    console.log("follwer saved hook:");
+
+    // const post = await Post.findById(doc.postId);
+    // if (!post) {
+    //   return next(new Error("Post not found"));
+    // }
+
+    const notification = new Notification({
+      sender: doc.followerId,
+      receiver: doc.followingId,
+      action: "follow",
+    });
+
+    await notification.save();
+
+    if (notification) {
+      console.log("Notification saved successfully:", notification);
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+export const Follower = mongoose.model("Follower", followerSchema);
