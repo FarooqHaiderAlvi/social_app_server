@@ -1,4 +1,3 @@
-import { type } from "express/lib/response";
 import mongoose, { Schema } from "mongoose";
 
 const messageSchema = new Schema(
@@ -13,9 +12,8 @@ const messageSchema = new Schema(
     },
     msgText: {
       type: String,
-      required: true,
     },
-    file: {
+    msgFile: {
       type: String,
     },
   },
