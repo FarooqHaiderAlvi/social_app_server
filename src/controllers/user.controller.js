@@ -107,6 +107,15 @@ const loginUser = asyncHandler(async (req, res) => {
     );
 });
 
+const LoggedInUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -refreshToken");
+  if (!user) {
+    throw new ApiError(400, "User does not exist.");
+  }
+
+  return res.status(200).json(new ApiResponse(200, user, "User fetched successfully."));
+});
+
 const logOutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
     req.user._id,
@@ -154,4 +163,4 @@ const updateAvatar = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, user, "User Avatar updated successfully."));
 });
 
-export { registerUser, loginUser, logOutUser, updateAvatar };
+export { registerUser, loginUser, logOutUser, updateAvatar, LoggedInUser };
