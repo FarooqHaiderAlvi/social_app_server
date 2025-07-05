@@ -21,6 +21,7 @@ const sendMessage = asyncHandler(async (req, res) => {
 
   let attachment = null;
   if (attachmentLocalPath) {
+    console.log("got you file");
     attachment = await uploadOnCloudinary(attachmentLocalPath);
   }
 
@@ -35,10 +36,33 @@ const sendMessage = asyncHandler(async (req, res) => {
     throw new ApiError(500, "Unable to send message.");
   }
 
-  // Emit socket event
+  // Enhanced Socket.IO emission with debugging
   try {
-    const io = getIO();
-    io.to(receiverId.toString()).emit("new-message", {
+    const { io, onlineUsers } = getIO();
+    const senderRoom = req.user._id.toString();
+    const receiverRoom = receiverId.toString();
+
+    console.log(`[Socket.IO] Emitting to rooms:
+    - Sender: ${senderRoom}
+    - Receiver: ${receiverRoom}
+    - Message ID: ${onlineUsers.get(req.user._id.toString())}`);
+    const tempSenderSocket = onlineUsers.get(req.user._id.toString());
+    const tempReceiverSocket = onlineUsers.get(receiverId.toString());
+    // Debug room membership
+    // console.log("[Socket.IO] Online users:", onlineUsers.size);
+    for (const [key, value] of onlineUsers) {
+      console.log(`Key: ${key}, Value: ${value}`);
+    }
+    const senderSockets = await io.in(tempSenderSocket).fetchSockets();
+    const receiverSockets = await io.in(tempReceiverSocket).fetchSockets();
+
+    console.log(`[Socket.IO] Room members:
+    - Sender room sockets: ${senderSockets.length}
+    - Receiver room sockets: ${receiverSockets.length}`);
+
+    // Emit to receiver
+    io.to(tempReceiverSocket).emit("new-message", {
+      eventType: "new-message",
       sender: req.user._id,
       message: {
         _id: message._id,
@@ -49,7 +73,10 @@ const sendMessage = asyncHandler(async (req, res) => {
         createdAt: message.createdAt,
       },
     });
-    io.to(req.user._id.toString()).emit("new-message", {
+
+    // Emit to sender (for their own UI update)
+    io.to(tempSenderSocket).emit("new-message", {
+      eventType: "new-message",
       sender: receiverId,
       message: {
         _id: message._id,
@@ -60,8 +87,11 @@ const sendMessage = asyncHandler(async (req, res) => {
         createdAt: message.createdAt,
       },
     });
+
+    console.log("[Socket.IO] Emission complete for message:", message._id);
   } catch (error) {
-    console.error("Socket emit error:", error);
+    console.error("[Socket.IO] Emission failed:", error);
+    // Continue with the response even if socket fails
   }
 
   return res.status(201).json(new ApiResponse(201, message, "Message sent successfully."));
@@ -122,7 +152,7 @@ const getUserMessages = asyncHandler(async (req, res) => {
         createdAt: 1,
       },
     },
-    { $sort: { createdAt: -1 } },
+    // { $sort: { createdAt: 1 } },
   ]);
 
   return res
