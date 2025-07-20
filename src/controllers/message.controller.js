@@ -168,4 +168,92 @@ const getUsers = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, users || [], "Users fetched successfully."));
 });
 
-export { sendMessage, getUserMessages, getUsers };
+const getAllUserChatMessages = asyncHandler(async (req, res) => {
+  const userId = req.user._id;
+
+  const result = await User.aggregate([
+    // 1. Exclude current logged-in user
+    {
+      $match: {
+        _id: { $ne: new ObjectId(userId) },
+      },
+    },
+
+    // 2. Lookup last message between current user and this user
+    {
+      $lookup: {
+        from: "messages",
+        let: { otherUserId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  {
+                    $or: [
+                      {
+                        $and: [
+                          { $eq: ["$senderId", new ObjectId(userId)] },
+                          { $eq: ["$receiverId", "$$otherUserId"] },
+                        ],
+                      },
+                      {
+                        $and: [
+                          { $eq: ["$receiverId", new ObjectId(userId)] },
+                          { $eq: ["$senderId", "$$otherUserId"] },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+          { $sort: { createdAt: -1 } },
+          { $limit: 1 },
+        ],
+        as: "lastMessage",
+      },
+    },
+
+    // 3. Flatten lastMessage array
+    {
+      $unwind: {
+        path: "$lastMessage",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    // 4. Final projection
+    {
+      $project: {
+        userId: "$_id",
+        username: 1,
+        avatar: 1,
+        messageId: "$lastMessage._id",
+        msgText: "$lastMessage.msgText",
+        createdAt: "$lastMessage.createdAt",
+        msgFile: {
+          $cond: [
+            { $isArray: "$lastMessage.msgFile" },
+            {
+              $map: {
+                input: "$lastMessage.msgFile",
+                as: "file",
+                in: {
+                  url: "$$file.url",
+                  type: "$$file.type",
+                },
+              },
+            },
+            [],
+          ],
+        },
+      },
+    },
+  ]);
+
+  return res.status(200).json(new ApiResponse(200, result || [], "Messages fetched successfully."));
+});
+
+export { sendMessage, getUserMessages, getUsers, getAllUserChatMessages };

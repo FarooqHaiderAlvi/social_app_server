@@ -56,6 +56,7 @@ const getUserNotifications = asyncHandler(async (req, res) => {
           email: "$receiverDetails.avatar",
         },
         postId: 1,
+        postUrl: 1,
         action: 1,
         isRead: 1,
         createdAt: 1,

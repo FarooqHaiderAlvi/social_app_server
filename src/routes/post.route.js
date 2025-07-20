@@ -6,6 +6,7 @@ import {
   getPostById,
   updatePost,
   deletePost,
+  getAllUsersPosts,
 } from "../controllers/post.controller.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
@@ -16,5 +17,6 @@ router.route("/userPosts").get(verifyJWT, getUserPosts);
 router.route("/userPost/:postId").get(verifyJWT, getPostById);
 router.route("/updatePost/:postId").patch(verifyJWT, upload.single("attachment"), updatePost);
 router.route("/updatePost/:postId").delete(verifyJWT, deletePost);
+router.route("/getAllUsersPosts").get(verifyJWT, getAllUsersPosts);
 
 export default router;
