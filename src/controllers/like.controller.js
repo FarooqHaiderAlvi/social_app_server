@@ -17,7 +17,9 @@ const toggleLike = asyncHandler(async (req, res) => {
   if (existingLike) {
     // If it exists, remove the like
     await Like.deleteOne({ _id: existingLike._id });
-    return res.status(200).json(new ApiResponse(200, {}, "Like removed successfully"));
+    return res
+      .status(200)
+      .json(new ApiResponse(200, { isLiked: false }, "Like removed successfully"));
   } else {
     console.log("Like not found, creating a new one");
     await Like.create({
@@ -25,7 +27,7 @@ const toggleLike = asyncHandler(async (req, res) => {
       likedBy: req.user._id,
     });
     console.log("in the main function");
-    return res.status(201).json(new ApiResponse(201, {}, "Like added successfully"));
+    return res.status(201).json(new ApiResponse(201, { isLiked: true }, "Like added successfully"));
   }
 });
 
