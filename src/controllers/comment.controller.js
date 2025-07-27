@@ -3,6 +3,7 @@ import { asyncHandler } from "../utils/asyncHandler.util.js";
 import { ObjectId } from "mongodb";
 import { Comment } from "../models/comment.model.js";
 import { ApiResponse } from "../utils/apiResponse.util.js";
+import { getIO } from "../utils/socket.util.js";
 import { Post } from "../models/post.model.js";
 const getPostComments = asyncHandler(async (req, res) => {
   //TODO: get all comments for a video
@@ -60,11 +61,35 @@ const createComment = asyncHandler(async (req, res) => {
   if (!post) {
     throw new ApiError(404, "Post not found");
   }
+  const receiverId = post.ownerId;
   const comment = await Comment.create({
     text: content,
     postId,
     commentedBy: req.user._id,
   });
+
+  const { io, onlineUsers } = getIO();
+  const tempSenderSocket = onlineUsers.get(req.user._id.toString());
+  const tempReceiverSocket = onlineUsers.get(receiverId?.toString());
+  if (comment.$notification) {
+    // Emit to receiver
+    if (comment?.$notification) {
+      console.log("sending notification", receiverId, req.user._id);
+      console.log("commentnotification", comment?.$notification);
+      io.to(tempReceiverSocket).emit("new-notification", {
+        eventType: "new-notification",
+        sender: receiverId,
+        notification: comment?.$notification,
+      });
+
+      // Emit to sender (for their own UI update)
+      io.to(tempSenderSocket).emit("new-notification", {
+        eventType: "new-notification",
+        sender: req.user._id,
+        notification: comment?.$notification,
+      });
+    }
+  }
 
   if (!comment) {
     throw new ApiError(500, "Something went wrong");

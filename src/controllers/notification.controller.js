@@ -42,21 +42,36 @@ const getUserNotifications = asyncHandler(async (req, res) => {
     {
       $unwind: "$receiverDetails",
     },
+    // Lookup for post details
+    {
+      $lookup: {
+        from: "posts",
+        localField: "postId",
+        foreignField: "_id",
+        as: "postDetails",
+      },
+    },
+    {
+      $unwind: {
+        path: "$postDetails",
+        preserveNullAndEmptyArrays: true, // In case post is deleted
+      },
+    },
     {
       $project: {
         _id: 1,
         sender: {
           _id: "$senderDetails._id",
           username: "$senderDetails.username",
-          email: "$senderDetails.avatar", // add other fields if needed
+          avatar: "$senderDetails.avatar",
         },
         receiver: {
           _id: "$receiverDetails._id",
           username: "$receiverDetails.username",
-          email: "$receiverDetails.avatar",
+          avatar: "$receiverDetails.avatar",
         },
         postId: 1,
-        postUrl: 1,
+        postUrl: "$postDetails.postUrl", // Add post URL from post details
         action: 1,
         isRead: 1,
         createdAt: 1,

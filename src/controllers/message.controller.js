@@ -42,10 +42,6 @@ const sendMessage = asyncHandler(async (req, res) => {
     const senderRoom = req.user._id.toString();
     const receiverRoom = receiverId.toString();
 
-    console.log(`[Socket.IO] Emitting to rooms:
-    - Sender: ${senderRoom}
-    - Receiver: ${receiverRoom}
-    - Message ID: ${onlineUsers.get(req.user._id.toString())}`);
     const tempSenderSocket = onlineUsers.get(req.user._id.toString());
     const tempReceiverSocket = onlineUsers.get(receiverId.toString());
     // Debug room membership

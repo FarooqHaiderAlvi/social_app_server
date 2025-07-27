@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { Notification } from "./notification.model.js";
 import { Post } from "./post.model.js";
+import { User } from "./user.model.js";
 const likeSchema = new Schema(
   {
     likedBy: {
@@ -44,9 +45,32 @@ likeSchema.post("save", async function (doc, next) {
 
     await notification.save();
 
-    if (notification) {
-      console.log("Notification saved successfully:", notification);
-    }
+    const [sender, receiver] = await Promise.all([
+      User.findById(doc.likedBy),
+      User.findById(post.ownerId),
+    ]);
+    doc.$notification = {
+      _id: notification._id,
+      sender: {
+        _id: sender._id,
+        username: sender.username,
+        avatar:
+          sender.avatar ||
+          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+      },
+      receiver: {
+        _id: receiver._id,
+        username: receiver.username,
+        avatar:
+          receiver.avatar ||
+          "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
+      },
+      postId: doc.postId,
+      postUrl: post.postUrl || "https://via.placeholder.com/150/000000/FFFFFF/?text=No+Image",
+      action: "like",
+      isRead: false,
+      createdAt: notification.createdAt,
+    };
 
     next();
   } catch (err) {
