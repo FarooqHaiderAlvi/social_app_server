@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-
+import { getIO } from "../utils/socket.util.js";
 const storySchema = new Schema({
   ownerId: {
     type: Schema.Types.ObjectId,
@@ -29,7 +29,7 @@ const storySchema = new Schema({
 storySchema.index(
   { createdAt: 1 },
   {
-    expireAfterSeconds: 120, // 2 minutes for testing
+    expireAfterSeconds: 24 * 60 * 60, //86400s story for one day,
     name: "story_ttl_index",
   }
 );
@@ -41,3 +41,31 @@ storySchema.pre("save", function (next) {
 });
 
 export const Story = mongoose.model("Story", storySchema);
+
+export const watchStories = () => {
+  let storyChangeStream = Story.watch();
+  const { io } = getIO();
+
+  const startWatch = () => {
+    storyChangeStream.on("change", (change) => {
+      console.log("Story change detected:", change);
+      io.emit("story-changed", change);
+    });
+
+    storyChangeStream.on("error", (err) => {
+      console.error("Story ChangeStream error:", err);
+
+      // Close the old stream
+      storyChangeStream.close();
+
+      // Restart the stream after a short delay
+      setTimeout(() => {
+        console.log("Restarting Story ChangeStream...");
+        storyChangeStream = Story.watch();
+        startWatch(); // reattach listeners
+      }, 5000);
+    });
+  };
+
+  startWatch();
+};

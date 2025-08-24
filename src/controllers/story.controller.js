@@ -28,9 +28,42 @@ const createStory = asyncHandler(async (req, res) => {
 });
 
 const getStory = asyncHandler(async (req, res) => {
-  const stories = await Story.find({ ownerId: req.user._id }).sort({
-    createdAt: -1,
-  });
+  // const stories = await Story.find().sort({ createdAt: -1 });
+
+  const stories = await Story.aggregate([
+    // 1. Lookup user info
+    {
+      $lookup: {
+        from: "users",
+        localField: "ownerId",
+        foreignField: "_id",
+        as: "owner",
+      },
+    },
+    // 2. Unwind the user array (because lookup gives an array)
+    { $unwind: "$owner" },
+
+    // 3. Group by owner to build story list
+    {
+      $group: {
+        _id: "$owner._id",
+        username: { $first: "$owner.username" },
+        avatar: { $first: "$owner.avatar" },
+        storyList: {
+          $push: {
+            _id: "$_id",
+            storyUrl: "$storyUrl",
+            createdAt: "$createdAt",
+            viewerId: "$viewerId",
+          },
+        },
+      },
+    },
+
+    // 4. Optional: sort by newest story per user
+    { $sort: { "storyList.createdAt": -1 } },
+  ]);
+
   if (!stories) {
     return res.status(200).json(new ApiResponse(200, [], "No Story Found."));
   }
